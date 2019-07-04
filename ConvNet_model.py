@@ -5,6 +5,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Dropout
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
+from tensorflow.keras import backend as K
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 from sklearn.utils.multiclass import unique_labels
@@ -88,6 +89,37 @@ def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, 
     fig.tight_layout()
     return ax
 
+
+'''
+Including metrics for precision, recall, and f_beta. Taken from the original keras documentation which was removed from later versions.
+Taken from: https://github.com/keras-team/keras/commit/a56b1a55182acf061b1eb2e2c86b48193a0e88f7
+'''
+def precision(y_true, y_pred):
+	true_pos = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+	predicted_pos = K.sum(K.round(K.clip(y_pred, 0, 1)))
+	precision = true_pos/(predicted_pos + K.epsilon())
+	return precision
+
+def recall(y_true, y_pred):
+	true_pos = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+	possible_pos = K.sum(K.round(K.clip(y_true, 0, 1)))
+	recall = true_pos/(possible_pos + K.epsilon())
+	return recall
+
+def fbeta_score(y_true, y_pred, beta = 1):
+	if beta < 0:
+		raise ValueError('The lowest choosable beta is zero (only precision)')
+
+	#If there are no true positives, fix the F score at 0 like sklearn
+	if K.sum(K.round(K.clip(y_true, 0, 1))) == 0:
+		return 0
+
+	p = precision(y_true, y_pred)
+	r = recall(y_true, y_pred)
+	bb = beta**2
+	fbeta_score = (1 + bb)*(p*r)/(bb*p + r + K.epsilon())
+	return fbeta_score
+
 def ConvNet_model(X, y, n_layers, model_name, class_names, Epochs = 16, SAVE_TEST_DATA = False):
 	#Define hyperparameters:
 	Kernel = (3, 3)
@@ -144,7 +176,7 @@ def ConvNet_model(X, y, n_layers, model_name, class_names, Epochs = 16, SAVE_TES
 
 	#Compile the model:
 	model.compile(optimizer = 'adam', loss = 'binary_crossentropy',
-              		metrics = ['accuracy'])
+              		metrics = ['accuracy', fbeta_score, precision, recall])
 
 	#Print a summary of the model:
 	model.summary()
@@ -177,5 +209,4 @@ def ConvNet_model(X, y, n_layers, model_name, class_names, Epochs = 16, SAVE_TES
 
 	visualise_incorrect_labels(X_test, np.asarray(y_test), np.asarray(test_predictions).ravel())
 
-ConvNet_model(features, labels, 6, 'models/conv_elliptical_spiral_final.model', ['Featured', 'Non-Featured'])
-
+ConvNet_model(features, labels, 6, 'models/conv_star_galaxy_metric_test.model', ['Non-extended', 'Extended'])
