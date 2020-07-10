@@ -41,7 +41,7 @@ class SourceDetection:
         
         print(f"Performed background reduction in {time.time() - start}")
 
-        # Returning the background subtracted image
+        # Returning the background subtracted image 
         subtracted_image = data - bkg
         return subtracted_image
 
