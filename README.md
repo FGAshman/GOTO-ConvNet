@@ -1,5 +1,5 @@
 # GOTO-ConvNet
-Source code for the Convolutional Neural Network to classify astronomical objects using the GOTO data. 4th year Astro project at University of Sheffield
+Source code for the Convolutional Neural Network to classify astronomical objects using the GOTO data. 4th year Astronomy project at University of Sheffield
 
 
 Code requires use of the Galaxy Zoo 2 database (can be downloaded from: https://data.galaxyzoo.org/) in order for survey matching and pre-labelling, and must be in CSV format.
